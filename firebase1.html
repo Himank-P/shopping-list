@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+
+    body{
+        font-family: 'Rubik', sans-serif;
+    }
+
+    #form{
+        border: 3px solid #ccc;
+        border-radius: 25px;
+        width: 500px;
+        height: 750px;
+        position:absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    #input{
+        border: none;
+        margin:none;
+        outline: none;
+        width:350px;
+        height:50px;
+        text-align: center;
+        border-radius: 10px;
+        background-color: #e0dddd;
+        font-size:24px;
+        padding:0px;
+        margin:5px;
+        position: relative;
+        left:50%;
+        transform: translateX(-50%);
+        cursor: pointer;
+    }
+
+    #atc{
+        border: none;
+        cursor: pointer;
+        width:350px;
+        height:50px;
+        border-radius: 10px;
+        background-color: maroon;
+        color: white;
+        font-size:24px;
+        margin:5px;
+        position: relative;
+        left:50%;
+        transform: translateX(-50%);
+        animation: ease-in-out;
+        transition: all 0.3s;
+    }
+
+    #atc:hover{
+        background-color: rgb(66, 5, 5);
+        box-shadow: 0px 5px 10px rgba(0,0,0,0.6);
+    }
+
+    #cartlab{
+        font-size:200px;
+        display:flex;
+        align-items: center;
+        justify-content: center;
+        
+    }
+
+    #foodlist{
+        font-family:Arial, Helvetica, sans-serif;
+        display: flex;
+        flex-wrap: wrap;
+        gap:10px;
+        cursor: pointer;
+        justify-content: center;
+        list-style-type: none;
+        max-width:500px;
+        transform: translateX(-22px);
+        
+    }
+
+    li{
+        
+        display: inline-block;
+        background-color: #e0dddd;
+        text-align: center;
+        justify-content: center;
+        color: rgb(59, 56, 56);
+        height: 30px;
+        flex-grow: 1;
+        font-size: 24px;
+        box-shadow: 0px 2px 5px rgba(0,0,0,0.3);
+        border-radius: 10px;
+        padding: 5px;
+        animation: ease-in-out;
+        transition: all 0.3s;
+    }
+
+    li:hover{
+        background-color: orange;
+        box-shadow: 0px 5px 8px rgba(241, 26, 26, 0.3)
+    }
+
+</style>
+<body>
+    <form id="form">
+        <div id="div">
+            <label id="cartlab">🛒</label><br><br>
+            <input id="input" type="text" placeholder="Enter an Item"><br>
+            <button id="atc">Add to cart</button>
+            <ul id="foodlist">
+
+            </ul>
+        </div>
+        
+    </form>
+</body>
+
+<script type = module>
+
+    // Modules Import
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js"
+
+    // Javascript Variables Declaration
+    var input = document.getElementById('input');
+    var foodlist = document.getElementById('foodlist')
+    const btn = document.getElementById('atc');
+    const form = document.getElementById('form')
+    var itemlist = []
+
+    // Database Connection Declarations
+    const appSettings = {
+        databaseURL: "https://sample-project-1-16ac6-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    }
+    const app = initializeApp(appSettings)
+    const database = getDatabase(app)
+    const list = ref(database,"items")
+    onValue(list, function(snapshot){
+        if(snapshot.exists()){
+            foodlist.innerHTML = ''
+            itemlist = Object.entries(snapshot.val())
+            addingitems(itemlist)
+            }
+        
+        else{
+            foodlist.innerHTML = '';
+            foodlist.innerHTML += '<li>There is nothing here ...Yet!'
+        }
+    })
+
+
+
+
+    btn.addEventListener('click',()=>{
+        let inval = input.value
+        appendingtodatabase(inval)
+        emptybox()
+        
+    })
+
+    form.addEventListener('submit',(event)=>{
+        event.preventDefault();
+    })
+
+    function emptybox(){
+        input.value="";
+    }
+
+    function appendingtodatabase(value){
+        push(list,value);
+    }
+
+    function appendlist(value){
+        let li = document.createElement('li')
+        li.textContent = value[1];
+        li.id = value[0]
+        foodlist.appendChild(li)
+    }
+
+    function addingitems(array){
+        for(let i of array){
+            appendlist(i)
+        }
+        deleteitem()
+    }
+
+    async function deleteitem(){
+        const elements = foodlist.querySelectorAll("li")
+        for (let i of elements){
+            i.addEventListener('click',(event)=>{
+                //code to delete the element from the database
+                let itemlocation = ref(database, `items/${event.target.id}`)
+                remove(itemlocation)
+            })
+        }
+    
+    }
+
+
+    
+</script>
+
+
+</html>
